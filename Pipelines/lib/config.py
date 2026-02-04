@@ -12,9 +12,10 @@ GOLD_SCHEMA = "03_gold"         # Schema pour Gold (BI-ready)
 # ----------------------
 # Volume & fichiers
 # ----------------------
-VOLULME_NAME = "ecommerce"
-VOLUME_PATH = "/Volumes/workspace/datasets/"+ VOLUME_NAME +"/"  # Volume contenant tous les CSV
+VOLUME_NAME = "ecommerce"
+VOLUME_PATH = "/Volumes/workspace/datasets/"+ VOLUME_NAME + "/" + "0_data/ecomm-raw-data/"  # Volume contenant tous les CSV
 CSV_EXTENSION = ".csv"                             # Extension des fichiers à lire
+
 
 # ----------------------
 # Diffentes couches
