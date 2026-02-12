@@ -171,6 +171,7 @@ def process_bronze_to_silver(
         # On garde le schéma de la source + les colonnes de gestion de temps
 
         (source_df.limit(0)
+         .drop("_ingested_at")
          .withColumn("date_creation", F.current_timestamp())
          .withColumn("date_modification", F.current_timestamp())
          .write.format("delta").mode("overwrite").saveAsTable(target_table))
@@ -231,7 +232,7 @@ def process_bronze_to_silver(
     insert_set["date_creation"] = F.col("s._ingested_at")
     insert_set["date_modification"] = F.current_timestamp()
    
-   
+
     delta_table.alias("t").merge(clean_df.alias("s"), join_cond) \
         .whenMatchedUpdate(condition=update_condition, set=update_set) \
         .whenNotMatchedInsert(values=insert_set) \
