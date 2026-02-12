@@ -120,13 +120,12 @@ def cast_columns_spark_types(df, columns_types, date_format="yyyy-MM-dd", timest
    return df
 
 
-
 from delta.tables import DeltaTable
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
+from datetime import datetime
 
 def process_bronze_to_silver(
-
     spark,
     source_df,
     target_table,
@@ -136,64 +135,93 @@ def process_bronze_to_silver(
 
 ):
 
-    print(f"--- Début du traitement pour la table : {table_name} ---")
+    """
+    Réalise une fusion (Upsert) entre un DataFrame source et une table Delta Silver.
 
-    # -------------------------------------------------------------------------
-    # 1. Déduplication optimisée
-    # -------------------------------------------------------------------------
+    PARAMÈTRES :
+    ------------
+    :param spark:        Session Spark active.
+    :param source_df:    DataFrame source (doit contenir '_ingested_at').
+    :param target_table: Nom de la table cible (ex: 'silver.ma_table').
+    :param table_name:   Nom logique pour les logs et rejets.
+    :param reject_path:  Chemin pour stocker les doublons écartés.
+    :param business_key: Liste des colonnes identifiant une ligne unique (ex: ['id']).
 
-    print(f"[1/5] Analyse des doublons sur la source...")
+    """
 
-    window_spec = Window.partitionBy(*source_df.columns).orderBy(F.lit(1))
+    print(f"--- Début du traitement : {table_name} ---")
+
+    # ==========================================================================
+    # 1. VÉRIFICATION DE LA COLONNE TECHNIQUE
+    # ==========================================================================
+    if "_ingested_at" not in source_df.columns:
+        print(f"❌ ERREUR : La colonne '_ingested_at' est absente de la source pour {table_name}.")
+        print(f"--- Fin du traitement (ÉCHEC) ---")
+        return  # Sortie immédiate de la fonction
+    #
+
+    # ==========================================================================
+    # 1. INITIALISATION (CRÉATION SI ABSENTE)
+    # ==========================================================================
+
+    if not spark.catalog.tableExists(target_table):
+
+        print(f"[1/5] La table {target_table} n'existe pas. Création initiale...")
+
+        # On garde le schéma de la source + les colonnes de gestion de temps
+
+        (source_df.limit(0)
+         .withColumn("date_creation", F.current_timestamp())
+         .withColumn("date_modification", F.current_timestamp())
+         .write.format("delta").mode("overwrite").saveAsTable(target_table))
+
+    # ==========================================================================
+    # 2. NETTOYAGE (DÉDOUBLONNAGE PAR CLÉ MÉTIER)
+    # ==========================================================================
+
+    print(f"[2/5] Nettoyage des doublons par clé métier...")
+
+    # On trie par date d'ingestion pour garder la ligne la plus fraîche
+    window_spec = Window.partitionBy(*business_key).orderBy(F.col("_ingested_at").desc())
     annotated_df = source_df.withColumn("_row_num", F.row_number().over(window_spec))
+
+    # On ne garde que la ligne n°1 (la plus récente) pour le merge
     clean_df = annotated_df.filter("_row_num == 1").drop("_row_num")
     duplicates_df = annotated_df.filter("_row_num > 1").drop("_row_num")
 
-    # Vérification des rejets
-    if not duplicates_df.rdd.isEmpty():
-        duplicate_count = duplicates_df.count()
-        print(f"      ⚠️ {duplicate_count} doublons détectés. Export vers : {reject_path}")
+    # Export des doublons si besoin
+    if duplicates_df.limit(1).count() > 0:
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        full_reject_path = f"{reject_path.rstrip('/')}/{table_name}_rejets/{current_date}/"
+        print(f"      ⚠️ Doublons détectés. Export vers : {full_reject_path}")
+        duplicates_df.write.mode("append").csv(full_reject_path)
 
-        duplicates_df \
-            .withColumn("table_name", F.lit(table_name)) \
-            .write \
-            .mode("append") \
-            .option("header", "true") \
-            .csv(reject_path)
-    else:
-        print("      ✅ Aucune ligne en double détectée.")
+    # ==========================================================================
+    # 3. PRÉPARATION TECHNIQUE DU MERGE
+    # ==========================================================================
 
-    # -------------------------------------------------------------------------
-    # 2. Préparation du Delta Lake
-    # -------------------------------------------------------------------------
-
-    print(f"[2/5] Connexion à la table Silver : {target_table}...")
+    print(f"[3/5] Préparation du moteur Delta...")
 
     delta_table = DeltaTable.forName(spark, target_table)
+   
+    # Condition de jointure (ex: t.id = s.id)
     join_cond = " AND ".join([f"t.{k} = s.{k}" for k in business_key])
 
-    non_key_cols = [
-        c for c in clean_df.columns
-        if c not in business_key
-        and c != "_ingested_at"
-        and c != "date_modification"
-    ]
+    # Colonnes à mettre à jour (toutes sauf les clés et colonnes techniques)
+    non_key_cols = [c for c in clean_df.columns if c not in business_key and c != "_ingested_at"]
 
-    # -------------------------------------------------------------------------
-    # 3. Préparation des conditions de mise à jour
-    # -------------------------------------------------------------------------
-
-    print(f"[3/5] Calcul des différences sur {len(non_key_cols)} colonnes métier...")
-
+    # Condition de changement : on met à jour SEULEMENT si une donnée a changé
     update_condition = " OR ".join([f"NOT (t.{c} <=> s.{c})" for c in non_key_cols])
 
-    # -------------------------------------------------------------------------
-    # 4. Configuration des dictionnaires de Mapping
-    # -------------------------------------------------------------------------
+    # ==========================================================================
+    # 4. EXÉCUTION DU MERGE (UPSERT)
+    # ==========================================================================
 
-    print(f"[4/5] Préparation du schéma de fusion (Merge)...")
+    print(f"[4/5] Exécution de la fusion Delta...")
 
+    # Construction des mappings pour plus de clarté
     update_set = {c: f"s.{c}" for c in non_key_cols}
+
     update_set["date_modification"] = F.current_timestamp()
     insert_set = {c: f"s.{c}" for c in non_key_cols}
 
@@ -201,25 +229,25 @@ def process_bronze_to_silver(
         insert_set[k] = f"s.{k}"
 
     insert_set["date_creation"] = F.col("s._ingested_at")
-    insert_set["date_modification"] = F.lit(None)
-
-    # -------------------------------------------------------------------------
-    # 5. Exécution du MERGE
-    # -------------------------------------------------------------------------
-
-    print(f"[5/5] Exécution du MERGE (Upsert) en cours...")
-
-    delta_table.alias("t") \
-        .merge(clean_df.alias("s"), join_cond) \
-        .whenMatchedUpdate(
-            condition=update_condition, 
-            set=update_set
-        ) \
-        .whenNotMatchedInsert(
-            values=insert_set
-        ) \
+    insert_set["date_modification"] = F.current_timestamp()
+   
+   
+    delta_table.alias("t").merge(clean_df.alias("s"), join_cond) \
+        .whenMatchedUpdate(condition=update_condition, set=update_set) \
+        .whenNotMatchedInsert(values=insert_set) \
         .execute()
 
-    print(f"✅ Traitement terminé avec succès pour {table_name}.")
-    print("-------------------------------------------------------")
+    # ==========================================================================
+    # 5. RÉCUPÉRATION ET AFFICHAGE DES STATISTIQUES
+    # ==========================================================================
+
+    metrics = delta_table.history(1).collect()[0]["operationMetrics"]
+
+    # Récupération flexible (Delta change les noms de clés selon l'opération)
+    inserted = metrics.get("numTargetRowsInserted") or metrics.get("num_inserted_rows") or "0"
+    updated = metrics.get("numTargetRowsUpdated") or metrics.get("num_updated_rows") or "0"
+
+    print(f"✅ [5/5] Terminé : {inserted} insertions, {updated} mises à jour.")
+
+    print("-" * 50)
  
