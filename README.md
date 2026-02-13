@@ -32,6 +32,14 @@ L’objectif est de construire un pipeline complet, maintenable et orienté BI, 
 
 Chaque notebook correspond à une étape du pipeline en médaillon.
 
+### 📁 `queries/` — Requêtes d’analyse
+
+- Validation Bronze  
+
+- Validation Silver  
+
+- Validation Gold  
+
 ---
 
 # 🧱 Architecture en Médaillon
@@ -54,9 +62,9 @@ Tables ingérées :
 
 **Principes :**
 
-- ingestion *Data*
+- ingestion *as-is*
 
-- ajout de colonnes techniques (`_ingested_at`, `_source_file`)
+- ajout de colonnes techniques (`ingestion_ts`, `source_file`)
 
 - stockage en Delta Lake
 
@@ -80,10 +88,11 @@ Transformations appliquées :
 
 - ajout de colonnes de traçabilité :
 
-  - `date_creation`
+  - `insert_ts`
 
-  - `date_modification`
-    
+  - `update_ts`
+
+  - `is_current`
 
 Tables Silver générées :
 
@@ -179,8 +188,6 @@ Un **dashboard Databricks** est construit à partir des tables Gold afin de four
 
 - `dim_ecommerce_categories`
 
-Le dashboard permet une **analyse interactive** directement dans Databricks SQL.
-
 ---
 
 # ⚙️ Notebook 00 — Setup & Initialisation
@@ -199,17 +206,15 @@ Rôle :
 
 ---
 
-# 🔍 Notebook — Queries Silver Zone
+# 🔍 Queries — Validation des Zones
 
-Notebook dédié à l’exploration et la validation des tables Silver :
+Les notebooks de requêtes permettent de valider chaque zone :
 
-- profiling
+- **Queries Bronze Zone** : cohérence brute  
 
-- contrôles qualité
+- **Queries Silver Zone** : qualité, normalisation  
 
-- vérification des relations
-
-- tests de cohérence
+- **Queries Gold Zone** : relations dimension/fait  
 
 ---
 
