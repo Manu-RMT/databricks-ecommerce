@@ -1,9 +1,975 @@
 {
+  "datasets": [
+    {
+      "name": "6059b7ae",
+      "displayName": "v_fact_ecommerce_transaction_all_data",
+      "queryLines": [
+        "SELECT * FROM workspace.`03_gold`.v_fact_ecommerce_transaction_all_data"
+      ],
+      "columns": [
+        {
+          "displayName": "Total Sales",
+          "description": "Total sales amount (sum of net_amount)",
+          "expression": "SUM(`net_amount`)"
+        },
+        {
+          "displayName": "Total Gross",
+          "description": "Total gross amount (sum of gross_amount)",
+          "expression": "SUM(`gross_amount`)"
+        }
+      ]
+    }
+  ],
   "pages": [
     {
       "name": "ef18eb6a",
-      "displayName": "Untitled page",
-      "pageType": "PAGE_TYPE_CANVAS"
+      "displayName": "Sales",
+      "layout": [
+        {
+          "widget": {
+            "name": "84d82e38",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## <span style=\"text-align:center;display:block\">Sales Insights</span>"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "df429a32",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "6059b7ae",
+                  "fields": [
+                    {
+                      "name": "measure(Total Sales)",
+                      "expression": "MEASURE(`Total Sales`)"
+                    },
+                    {
+                      "name": "month_name",
+                      "expression": "`month_name`"
+                    },
+                    {
+                      "name": "sum(month)",
+                      "expression": "SUM(`month`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "ASC",
+                      "expression": "SUM(`month`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Sales Trend by Month",
+                "showTitle": true
+              },
+              "mark": {
+                "colors": [
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 2
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 2
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 3
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 4
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 5
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 6
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 7
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 8
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 9
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 10
+                  }
+                ],
+                "size": 0.6
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "month_name",
+                  "displayName": "Month",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure",
+                      "measure": {
+                        "fieldName": "sum(month)"
+                      }
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(Total Sales)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "EUR",
+                    "abbreviation": "compact"
+                  },
+                  "displayName": "Total Sales",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": false
+                },
+                "extra": [
+                  {
+                    "fieldName": "measure(Total Sales)",
+                    "format": {
+                      "type": "number-plain",
+                      "abbreviation": "compact",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 2
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "2f92da16",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "6059b7ae",
+                  "fields": [
+                    {
+                      "name": "category_name",
+                      "expression": "`category_name`"
+                    },
+                    {
+                      "name": "measure(Total Sales)",
+                      "expression": "MEASURE(`Total Sales`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "category_name",
+                  "axis": {
+                    "title": "Category"
+                  },
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(Total Sales)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 3,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "53e27b87",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "6059b7ae",
+                  "fields": [
+                    {
+                      "name": "measure(Total Sales)",
+                      "expression": "MEASURE(`Total Sales`)"
+                    },
+                    {
+                      "name": "hour_of_day",
+                      "expression": "`hour_of_day`"
+                    },
+                    {
+                      "name": "day_name",
+                      "expression": "`day_name`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "heatmap",
+              "encodings": {
+                "x": {
+                  "fieldName": "hour_of_day",
+                  "displayName": "Hours of Day",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "day_name",
+                  "axis": {
+                    "title": "Days"
+                  },
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "custom-order",
+                      "orderedValues": [
+                        "Monday",
+                        "Tuesday",
+                        "Wednesday",
+                        "Thursday",
+                        "Friday",
+                        "Saturday",
+                        "Sunday"
+                      ]
+                    }
+                  }
+                },
+                "color": {
+                  "fieldName": "measure(Total Sales)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "daf042a4",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "6059b7ae",
+                  "fields": [
+                    {
+                      "name": "coupon_flag",
+                      "expression": "`coupon_flag`"
+                    },
+                    {
+                      "name": "month_name",
+                      "expression": "`month_name`"
+                    },
+                    {
+                      "name": "measure(Total Sales)",
+                      "expression": "MEASURE(`Total Sales`)"
+                    },
+                    {
+                      "name": "sum(month)",
+                      "expression": "SUM(`month`)"
+                    }
+                  ],
+                  "cubeGroupingSets": {
+                    "sets": [
+                      {
+                        "fieldNames": [
+                          "coupon_flag"
+                        ]
+                      },
+                      {
+                        "fieldNames": [
+                          "month_name"
+                        ]
+                      }
+                    ]
+                  },
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "ASC",
+                      "expression": "SUM(`month`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Coupon Usage Impact on Sales",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "month_name",
+                  "displayName": "Month",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure",
+                      "measure": {
+                        "fieldName": "sum(month)"
+                      }
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(Total Sales)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "EUR",
+                    "abbreviation": "compact"
+                  },
+                  "displayName": "Total Sales",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "coupon_flag",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "displayName": "Coupon Flag",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 14,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "926fc6d6",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "6059b7ae",
+                  "fields": [
+                    {
+                      "name": "measure(Total Sales)",
+                      "expression": "MEASURE(`Total Sales`)"
+                    },
+                    {
+                      "name": "channel",
+                      "expression": "`channel`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Sales by Channel",
+                "showTitle": true
+              },
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "measure(Total Sales)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "EUR",
+                    "abbreviation": "compact"
+                  },
+                  "displayName": "Total Sales"
+                },
+                "color": {
+                  "fieldName": "channel",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "displayName": "Channel",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 19,
+            "width": 5,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "a72009b3",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "6059b7ae",
+                  "fields": [
+                    {
+                      "name": "channel",
+                      "expression": "`channel`"
+                    },
+                    {
+                      "name": "month_name",
+                      "expression": "`month_name`"
+                    },
+                    {
+                      "name": "measure(Total Sales)",
+                      "expression": "MEASURE(`Total Sales`)"
+                    },
+                    {
+                      "name": "sum(month)",
+                      "expression": "SUM(`month`)"
+                    }
+                  ],
+                  "cubeGroupingSets": {
+                    "sets": [
+                      {
+                        "fieldNames": [
+                          "channel"
+                        ]
+                      },
+                      {
+                        "fieldNames": [
+                          "month_name"
+                        ]
+                      }
+                    ]
+                  },
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "ASC",
+                      "expression": "SUM(`month`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Sales by Channel Across Months",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "month_name",
+                  "displayName": "Month",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure",
+                      "measure": {
+                        "fieldName": "sum(month)"
+                      }
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(Total Sales)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "EUR",
+                    "abbreviation": "compact"
+                  },
+                  "displayName": "Total Sales",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "channel",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "displayName": "Channel",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 5,
+            "y": 19,
+            "width": 7,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "59081189",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "6059b7ae",
+                  "fields": [
+                    {
+                      "name": "is_weekend",
+                      "expression": "`is_weekend`"
+                    },
+                    {
+                      "name": "measure(Total Sales)",
+                      "expression": "MEASURE(`Total Sales`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Sales: Weekend (True) vs Weekday (False)",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "is_weekend",
+                  "displayName": "Weekend/Weekday",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "natural-order-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(Total Sales)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "EUR",
+                    "abbreviation": "compact"
+                  },
+                  "displayName": "Total Sales",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "is_weekend",
+                  "legend": {
+                    "hide": true
+                  },
+                  "displayName": "Weekend/Weekday",
+                  "scale": {
+                    "type": "categorical",
+                    "mappings": [
+                      {
+                        "value": false,
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 5
+                        }
+                      },
+                      {
+                        "value": true,
+                        "color": {
+                          "themeColorType": "visualizationColors",
+                          "position": 10
+                        }
+                      }
+                    ]
+                  }
+                },
+                "label": {
+                  "show": true,
+                  "text": {
+                    "fieldName": "measure(Total Sales)",
+                    "displayName": "Total Sales"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 25,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "795006ce",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "6059b7ae",
+                  "fields": [
+                    {
+                      "name": "channel",
+                      "expression": "`channel`"
+                    },
+                    {
+                      "name": "category_name",
+                      "expression": "`category_name`"
+                    },
+                    {
+                      "name": "measure(Total Sales)",
+                      "expression": "MEASURE(`Total Sales`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Sales by Channel and Category",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "category_name",
+                  "displayName": "Category",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(Total Sales)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "EUR",
+                    "abbreviation": "compact"
+                  },
+                  "displayName": "Total Sales",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "channel",
+                  "legend": {
+                    "position": "right"
+                  },
+                  "displayName": "Channel",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 25,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "fcbeac67",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "6059b7ae",
+                  "fields": [
+                    {
+                      "name": "measure(Total Sales)",
+                      "expression": "MEASURE(`Total Sales`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Total Sales",
+                "showTitle": true
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Total Sales)",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "EUR",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 2
+                    }
+                  },
+                  "displayName": "Total Sales"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 1,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "876dcf73",
+      "displayName": "Global Filters",
+      "layout": [
+        {
+          "widget": {
+            "name": "category",
+            "queries": [
+              {
+                "name": "dashboards/01f108b64a131a0d959c6eda55705db6/datasets/01f108c9c8f41d15976746b10f138bd0_category_name",
+                "query": {
+                  "datasetName": "6059b7ae",
+                  "fields": [
+                    {
+                      "name": "category_name",
+                      "expression": "`category_name`"
+                    },
+                    {
+                      "name": "category_name_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "showDescription": false,
+                "title": "Category"
+              },
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "category_name",
+                    "queryName": "dashboards/01f108b64a131a0d959c6eda55705db6/datasets/01f108c9c8f41d15976746b10f138bd0_category_name"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "day",
+            "queries": [
+              {
+                "name": "dashboards/01f108b64a131a0d959c6eda55705db6/datasets/01f108c9c8f41d15976746b10f138bd0_day_name",
+                "query": {
+                  "datasetName": "6059b7ae",
+                  "fields": [
+                    {
+                      "name": "day_name",
+                      "expression": "`day_name`"
+                    },
+                    {
+                      "name": "day_name_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Day"
+              },
+              "scale": {
+                "type": "categorical",
+                "sort": {
+                  "by": "custom-order",
+                  "orderedValues": [
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                    "Saturday",
+                    "Sunday"
+                  ]
+                }
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "day_name",
+                    "queryName": "dashboards/01f108b64a131a0d959c6eda55705db6/datasets/01f108c9c8f41d15976746b10f138bd0_day_name"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "year",
+            "queries": [
+              {
+                "name": "dashboards/01f108b64a131a0d959c6eda55705db6/datasets/01f108c9c8f41d15976746b10f138bd0_year",
+                "query": {
+                  "datasetName": "6059b7ae",
+                  "fields": [
+                    {
+                      "name": "year",
+                      "expression": "`year`"
+                    },
+                    {
+                      "name": "year_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Year"
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "year",
+                    "queryName": "dashboards/01f108b64a131a0d959c6eda55705db6/datasets/01f108c9c8f41d15976746b10f138bd0_year"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 1,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
     }
   ],
   "uiSettings": {
