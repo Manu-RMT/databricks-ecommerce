@@ -88,11 +88,10 @@ Transformations appliquées :
 
 - ajout de colonnes de traçabilité :
 
-  - `insert_ts`
+  - `date_creation`
 
-  - `update_ts`
+  - `date_modification`
 
-  - `is_current`
 
 Tables Silver générées :
 
